@@ -1,0 +1,572 @@
+const express = require("express");
+const nodemailer = require("nodemailer");
+
+const Contact = require("../models/Contact");
+
+const router = express.Router();
+
+
+// ==========================================
+// GMAIL TRANSPORTER
+// ==========================================
+
+const transporter = nodemailer.createTransport({
+  service: "gmail",
+
+  auth: {
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASS
+  }
+});
+
+
+// ==========================================
+// VERIFY GMAIL SMTP
+// ==========================================
+
+transporter.verify((error, success) => {
+
+  if (error) {
+
+    console.error("------------------------------------------");
+    console.error("Gmail SMTP connection failed");
+    console.error(error.message);
+    console.error("------------------------------------------");
+
+  } else {
+
+    console.log("------------------------------------------");
+    console.log("Gmail SMTP is ready");
+    console.log("------------------------------------------");
+
+  }
+
+});
+
+
+// ==========================================
+// ESCAPE HTML
+// ==========================================
+
+function escapeHtml(value = "") {
+
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
+
+// ==========================================
+// POST /api/contact
+// ==========================================
+
+router.post("/contact", async (req, res) => {
+
+  try {
+
+    console.log("------------------------------------------");
+    console.log("New quotation request received");
+    console.log("Request body:", req.body);
+    console.log("------------------------------------------");
+
+
+    // ======================================
+    // GET FORM DATA
+    // ======================================
+
+    const {
+      name,
+      mobile,
+      location,
+      propertyType,
+      area,
+      service,
+      requirements
+    } = req.body;
+
+
+    // ======================================
+    // REQUIRED FIELD VALIDATION
+    // ======================================
+
+    if (
+      !name ||
+      !mobile ||
+      !location ||
+      !propertyType ||
+      !service
+    ) {
+
+      return res.status(400).json({
+        success: false,
+        message: "Please fill all required fields."
+      });
+
+    }
+
+
+    // ======================================
+    // MOBILE VALIDATION
+    // ======================================
+
+    const cleanMobile = String(mobile)
+      .replace(/\s+/g, "")
+      .trim();
+
+
+    if (!/^[6-9]\d{9}$/.test(cleanMobile)) {
+
+      return res.status(400).json({
+        success: false,
+        message: "Please enter a valid 10-digit mobile number."
+      });
+
+    }
+
+
+    // ======================================
+    // SAVE TO MONGODB
+    // ======================================
+
+    const enquiry = await Contact.create({
+
+      name: String(name).trim(),
+
+      mobile: cleanMobile,
+
+      location: String(location).trim(),
+
+      propertyType: String(propertyType).trim(),
+
+      area: area
+        ? String(area).trim()
+        : "",
+
+      service: String(service).trim(),
+
+      requirements: requirements
+        ? String(requirements).trim()
+        : ""
+
+    });
+
+
+    console.log(
+      "Quotation saved to MongoDB:",
+      enquiry._id
+    );
+
+
+    // ======================================
+    // SAFE EMAIL VALUES
+    // ======================================
+
+    const safeName =
+      escapeHtml(name);
+
+    const safeMobile =
+      escapeHtml(cleanMobile);
+
+    const safeLocation =
+      escapeHtml(location);
+
+    const safePropertyType =
+      escapeHtml(propertyType);
+
+    const safeArea =
+      escapeHtml(area || "Not Provided");
+
+    const safeService =
+      escapeHtml(service);
+
+    const safeRequirements =
+      escapeHtml(
+        requirements || "None"
+      );
+
+
+    // ======================================
+    // EMAIL
+    // ======================================
+
+    const mailOptions = {
+
+      from:
+        `"Soham Painting Services" <${process.env.EMAIL_USER}>`,
+
+      to:
+        process.env.RECEIVER_EMAIL,
+
+      subject:
+        `New Painting Quotation Request - ${name}`,
+
+      html: `
+
+        <!DOCTYPE html>
+
+        <html>
+
+        <head>
+
+          <meta charset="UTF-8">
+
+          <title>
+            New Painting Quotation Request
+          </title>
+
+        </head>
+
+        <body style="
+          margin:0;
+          padding:20px;
+          background:#f5f5f5;
+          font-family:Arial,Helvetica,sans-serif;
+        ">
+
+          <div style="
+            max-width:650px;
+            margin:0 auto;
+            background:#ffffff;
+            border:1px solid #dddddd;
+            border-radius:10px;
+            overflow:hidden;
+          ">
+
+            <!-- HEADER -->
+
+            <div style="
+              background:#222222;
+              color:#ffffff;
+              padding:20px;
+            ">
+
+              <h2 style="
+                margin:0;
+                font-size:22px;
+              ">
+
+                New Painting Quotation Request
+
+              </h2>
+
+            </div>
+
+
+            <!-- CONTENT -->
+
+            <div style="padding:25px;">
+
+              <p style="
+                font-size:15px;
+                color:#333333;
+              ">
+
+                A new customer has submitted
+                a quotation request through
+                the website.
+
+              </p>
+
+
+              <!-- DETAILS TABLE -->
+
+              <table style="
+                width:100%;
+                border-collapse:collapse;
+                margin-top:20px;
+              ">
+
+                <tr>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                    background:#f7f7f7;
+                    width:40%;
+                  ">
+
+                    <strong>
+                      Customer Name
+                    </strong>
+
+                  </td>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                  ">
+
+                    ${safeName}
+
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                    background:#f7f7f7;
+                  ">
+
+                    <strong>
+                      Mobile Number
+                    </strong>
+
+                  </td>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                  ">
+
+                    ${safeMobile}
+
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                    background:#f7f7f7;
+                  ">
+
+                    <strong>
+                      Location
+                    </strong>
+
+                  </td>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                  ">
+
+                    ${safeLocation}
+
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                    background:#f7f7f7;
+                  ">
+
+                    <strong>
+                      Property Type
+                    </strong>
+
+                  </td>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                  ">
+
+                    ${safePropertyType}
+
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                    background:#f7f7f7;
+                  ">
+
+                    <strong>
+                      Approx. Area
+                    </strong>
+
+                  </td>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                  ">
+
+                    ${safeArea}
+
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                    background:#f7f7f7;
+                  ">
+
+                    <strong>
+                      Service Required
+                    </strong>
+
+                  </td>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                    font-weight:bold;
+                  ">
+
+                    ${safeService}
+
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                    background:#f7f7f7;
+                  ">
+
+                    <strong>
+                      Additional Requirements
+                    </strong>
+
+                  </td>
+
+                  <td style="
+                    padding:12px;
+                    border:1px solid #dddddd;
+                  ">
+
+                    ${safeRequirements}
+
+                  </td>
+
+                </tr>
+
+              </table>
+
+
+              <!-- FOOTER MESSAGE -->
+
+              <p style="
+                margin-top:25px;
+                color:#333333;
+              ">
+
+                Please contact the customer
+                regarding this quotation request.
+
+              </p>
+
+
+              <p style="
+                margin-top:20px;
+                font-size:12px;
+                color:#777777;
+              ">
+
+                Enquiry ID:
+                ${enquiry._id}
+
+              </p>
+
+              <p style="
+                font-size:12px;
+                color:#777777;
+              ">
+
+                Submitted:
+                ${new Date().toLocaleString("en-IN")}
+
+              </p>
+
+            </div>
+
+          </div>
+
+        </body>
+
+        </html>
+
+      `
+    };
+
+
+    // ======================================
+    // SEND EMAIL
+    // ======================================
+
+    await transporter.sendMail(mailOptions);
+
+
+    console.log("Quotation email sent successfully");
+
+
+    // ======================================
+    // SUCCESS RESPONSE
+    // ======================================
+
+    return res.status(200).json({
+
+      success: true,
+
+      message:
+        "Quotation request submitted successfully."
+
+    });
+
+
+  } catch (error) {
+
+    // ======================================
+    // ERROR
+    // ======================================
+
+    console.error("------------------------------------------");
+    console.error("CONTACT FORM ERROR");
+    console.error("------------------------------------------");
+
+    console.error(error);
+
+    console.error("Error message:", error.message);
+
+    console.error("Error stack:", error.stack);
+
+    console.error("------------------------------------------");
+
+
+    return res.status(500).json({
+
+      success: false,
+
+      message:
+        error.message ||
+        "Unable to submit quotation request."
+
+    });
+
+  }
+
+});
+
+
+module.exports = router;
