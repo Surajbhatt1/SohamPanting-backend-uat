@@ -9,6 +9,10 @@ dotenv.config();
 
 const app = express();
 
+/* =====================================================
+   CONFIGURATION
+===================================================== */
+
 const PORT = process.env.PORT || 5000;
 
 
@@ -19,21 +23,25 @@ const PORT = process.env.PORT || 5000;
 const logsDirectory = path.join(__dirname, "logs");
 const emailLogFile = path.join(logsDirectory, "email.log");
 
-if (!fs.existsSync(logsDirectory)) {
-  fs.mkdirSync(logsDirectory, {
-    recursive: true
-  });
-}
+try {
+  if (!fs.existsSync(logsDirectory)) {
+    fs.mkdirSync(logsDirectory, {
+      recursive: true
+    });
+  }
 
-if (!fs.existsSync(emailLogFile)) {
-  fs.writeFileSync(
-    emailLogFile,
-    "========================================\n" +
-      "SOHAM PAINTING SERVICES\n" +
-      "EMAIL LOG\n" +
-      "========================================\n\n",
-    "utf8"
-  );
+  if (!fs.existsSync(emailLogFile)) {
+    fs.writeFileSync(
+      emailLogFile,
+      "========================================\n" +
+        "SOHAM PAINTING SERVICES\n" +
+        "EMAIL LOG\n" +
+        "========================================\n\n",
+      "utf8"
+    );
+  }
+} catch (error) {
+  console.error("Log initialization error:", error.message);
 }
 
 
@@ -44,8 +52,6 @@ if (!fs.existsSync(emailLogFile)) {
 const allowedOrigins = [
   "http://localhost:5173",
   "http://localhost:3000",
-
-  // Your Netlify website
   "https://sohampanting5.netlify.app"
 ];
 
@@ -53,7 +59,8 @@ app.use(
   cors({
     origin: function (origin, callback) {
 
-      // Allow requests such as Postman
+      // Allow requests without Origin
+      // Example: Postman / server-to-server requests
       if (!origin) {
         return callback(null, true);
       }
@@ -62,10 +69,7 @@ app.use(
         return callback(null, true);
       }
 
-      console.log(
-        "Blocked CORS origin:",
-        origin
-      );
+      console.log("Blocked CORS origin:", origin);
 
       return callback(
         new Error("Not allowed by CORS")
@@ -149,49 +153,53 @@ console.log("------------------------------------------");
    MONGODB CONNECTION
 ===================================================== */
 
-if (!process.env.MONGODB_URI) {
+let mongoConnectionPromise = null;
 
-  console.error(
-    "ERROR: MONGODB_URI is missing."
-  );
+const connectMongoDB = async () => {
 
-} else {
+  if (!process.env.MONGODB_URI) {
+    throw new Error("MONGODB_URI is missing");
+  }
 
-  mongoose
-    .connect(process.env.MONGODB_URI)
-    .then(() => {
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
 
-      console.log("------------------------------------------");
-      console.log(
-        "MongoDB connected successfully"
-      );
-      console.log("------------------------------------------");
+  if (!mongoConnectionPromise) {
 
-    })
-    .catch((error) => {
+    mongoConnectionPromise = mongoose
+      .connect(process.env.MONGODB_URI)
+      .then(() => {
 
-      console.error("------------------------------------------");
-      console.error(
-        "MongoDB connection failed:"
-      );
+        console.log("------------------------------------------");
+        console.log("MongoDB connected successfully");
+        console.log("------------------------------------------");
 
-      console.error(
-        error.message
-      );
+        return mongoose.connection;
 
-      console.error("------------------------------------------");
+      })
+      .catch((error) => {
 
-    });
+        mongoConnectionPromise = null;
 
-}
+        console.error("------------------------------------------");
+        console.error("MongoDB connection failed:");
+        console.error(error.message);
+        console.error("------------------------------------------");
+
+        throw error;
+      });
+  }
+
+  return mongoConnectionPromise;
+};
 
 
 /* =====================================================
    CONTACT ROUTES
 ===================================================== */
 
-const contactRoutes =
-  require("./routes/contact");
+const contactRoutes = require("./routes/contact");
 
 app.use(
   "/api",
@@ -223,21 +231,45 @@ app.get("/", (req, res) => {
 
 app.get(
   "/api/health",
-  (req, res) => {
+  async (req, res) => {
 
-    res.status(200).json({
+    try {
 
-      success: true,
+      await connectMongoDB();
 
-      message:
-        "Soham Painting API is healthy",
+      res.status(200).json({
 
-      mongodb:
-        mongoose.connection.readyState === 1
-          ? "connected"
-          : "not connected"
+        success: true,
 
-    });
+        message:
+          "Soham Painting API is healthy",
+
+        mongodb:
+          mongoose.connection.readyState === 1
+            ? "connected"
+            : "not connected"
+
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Health check MongoDB error:",
+        error.message
+      );
+
+      res.status(500).json({
+
+        success: false,
+
+        message:
+          "Soham Painting API is running but MongoDB is not connected",
+
+        mongodb:
+          "not connected"
+
+      });
+    }
 
   }
 );
@@ -271,9 +303,7 @@ app.use(
   (error, req, res, next) => {
 
     console.error("------------------------------------------");
-    console.error(
-      "GLOBAL ERROR"
-    );
+    console.error("GLOBAL ERROR");
     console.error("------------------------------------------");
 
     console.error(
@@ -296,31 +326,44 @@ app.use(
 
 
 /* =====================================================
-   START SERVER
+   LOCAL SERVER
 ===================================================== */
 
-app.listen(
-  PORT,
-  "0.0.0.0",
-  () => {
+// Start local server only when running locally.
+// Vercel will use the exported Express app.
 
-    console.log("------------------------------------------");
+if (require.main === module) {
 
-    console.log(
-      `Server running on port ${PORT}`
-    );
+  app.listen(
+    PORT,
+    "0.0.0.0",
+    () => {
 
-    console.log("------------------------------------------");
+      console.log("------------------------------------------");
 
-    console.log(
-      "Email log file:"
-    );
+      console.log(
+        `Server running on port ${PORT}`
+      );
 
-    console.log(
-      emailLogFile
-    );
+      console.log("------------------------------------------");
 
-    console.log("------------------------------------------");
+      console.log(
+        "Email log file:"
+      );
 
-  }
-);
+      console.log(
+        emailLogFile
+      );
+
+      console.log("------------------------------------------");
+
+    }
+  );
+}
+
+
+/* =====================================================
+   EXPORT APP FOR VERCEL
+===================================================== */
+
+module.exports = app;
