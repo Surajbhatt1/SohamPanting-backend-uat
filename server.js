@@ -362,6 +362,15 @@ if (require.main === module) {
 }
 
 
+
+if (require.main === module) {
+  app.listen(PORT, "0.0.0.0", () => {
+    console.log("------------------------------------------");
+    console.log(`Server running on port ${PORT}`);
+    console.log("------------------------------------------");
+  });
+}
+
 /* =====================================================
    EXPORT APP FOR VERCEL
 ===================================================== */
