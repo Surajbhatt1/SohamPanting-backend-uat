@@ -48,7 +48,7 @@ try {
 ===================================================== */
 
 const allowedOrigins = [
-  "http://localhost:5173",
+  "http://localhost:5000",
   "http://localhost:3000",
   "https://sohampanting5.netlify.app",
   "https://soham-panting-frontend-uat.vercel.app"

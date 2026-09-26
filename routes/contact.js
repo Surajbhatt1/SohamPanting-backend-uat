@@ -1329,168 +1329,322 @@ router.post("/contact", async (req, res) => {
        SEND EMAIL
     =============================================== */
 
+    // try {
+    //   const mailResult =
+    //     await transporter.sendMail({
+    //       from:
+    //         `"Soham Painting Services" <${process.env.EMAIL_USER}>`,
+
+    //       to:
+    //         process.env.RECEIVER_EMAIL,
+
+    //       replyTo:
+    //         process.env.EMAIL_USER,
+
+    //       subject,
+
+    //       html:
+    //         emailHTML
+    //     });
+
+    //   const duration =
+    //     Date.now() - startTime;
+
+    //   /* =============================================
+    //      EMAIL SUCCESS LOG
+    //   ============================================= */
+
+    //   writeEmailLog({
+    //     template:
+    //       "Quotation Enquiry",
+
+    //     status:
+    //       "SUCCESS",
+
+    //     name:
+    //       cleanData.name,
+
+    //     mobile:
+    //       cleanData.mobile,
+
+    //     location:
+    //       cleanData.location,
+
+    //     propertyType:
+    //       cleanData.propertyType,
+
+    //     area:
+    //       cleanData.area,
+
+    //     service:
+    //       cleanData.service,
+
+    //     requirements:
+    //       cleanData.requirements,
+
+    //     enquiryId,
+
+    //     from:
+    //       process.env.EMAIL_USER,
+
+    //     to:
+    //       process.env.RECEIVER_EMAIL,
+
+    //     subject,
+
+    //     duration:
+    //       `${duration} ms`,
+
+    //     messageId:
+    //       mailResult.messageId,
+
+    //     smtpResponse:
+    //       mailResult.response
+    //   });
+
+    //   console.log(
+    //     "EMAIL SENT SUCCESSFULLY"
+    //   );
+
+    //   return res.status(200).json({
+    //     success: true,
+
+    //     message:
+    //       "Quotation submitted successfully.",
+
+    //     emailSent: true,
+
+    //     enquiryId
+    //   });
+
+    // } catch (emailError) {
+
+    //   const duration =
+    //     Date.now() - startTime;
+
+    //   /* =============================================
+    //      EMAIL FAILED LOG
+    //   ============================================= */
+
+    //   writeEmailLog({
+    //     template:
+    //       "Quotation Enquiry",
+
+    //     status:
+    //       "FAILED",
+
+    //     name:
+    //       cleanData.name,
+
+    //     mobile:
+    //       cleanData.mobile,
+
+    //     location:
+    //       cleanData.location,
+
+    //     propertyType:
+    //       cleanData.propertyType,
+
+    //     area:
+    //       cleanData.area,
+
+    //     service:
+    //       cleanData.service,
+
+    //     requirements:
+    //       cleanData.requirements,
+
+    //     enquiryId,
+
+    //     from:
+    //       process.env.EMAIL_USER,
+
+    //     to:
+    //       process.env.RECEIVER_EMAIL,
+
+    //     subject,
+
+    //     duration:
+    //       `${duration} ms`,
+
+    //     errorCode:
+    //       emailError.code || "",
+
+    //     errorMessage:
+    //       emailError.message || ""
+    //   });
+
+    //   console.error(
+    //     "EMAIL FAILED:",
+    //     emailError.message
+    //   );
+
+    //   return res.status(200).json({
+    //     success: true,
+
+    //     message:
+    //       "Quotation submitted successfully. We will contact you shortly.",
+
+    //     emailSent: false,
+
+    //     enquiryId
+    //   });
+    // }
+
+
+
+
     try {
-      const mailResult =
-        await transporter.sendMail({
-          from:
-            `"Soham Painting Services" <${process.env.EMAIL_USER}>`,
+  transporter.sendMail({
+    from:
+      `"Soham Painting Services" <${process.env.EMAIL_USER}>`,
 
-          to:
-            process.env.RECEIVER_EMAIL,
+    to:
+      process.env.RECEIVER_EMAIL,
 
-          replyTo:
-            process.env.EMAIL_USER,
+    replyTo:
+      process.env.EMAIL_USER,
 
-          subject,
+    subject,
 
-          html:
-            emailHTML
-        });
+    html:
+      emailHTML
+  })
+  .then((mailResult) => {
 
-      const duration =
-        Date.now() - startTime;
+    writeEmailLog({
+      template:
+        "Quotation Enquiry",
 
-      /* =============================================
-         EMAIL SUCCESS LOG
-      ============================================= */
+      status:
+        "SUCCESS",
 
-      writeEmailLog({
-        template:
-          "Quotation Enquiry",
+      name:
+        cleanData.name,
 
-        status:
-          "SUCCESS",
+      mobile:
+        cleanData.mobile,
 
-        name:
-          cleanData.name,
+      location:
+        cleanData.location,
 
-        mobile:
-          cleanData.mobile,
+      propertyType:
+        cleanData.propertyType,
 
-        location:
-          cleanData.location,
+      area:
+        cleanData.area,
 
-        propertyType:
-          cleanData.propertyType,
+      service:
+        cleanData.service,
 
-        area:
-          cleanData.area,
+      requirements:
+        cleanData.requirements,
 
-        service:
-          cleanData.service,
+      enquiryId,
 
-        requirements:
-          cleanData.requirements,
+      from:
+        process.env.EMAIL_USER,
 
-        enquiryId,
+      to:
+        process.env.RECEIVER_EMAIL,
 
-        from:
-          process.env.EMAIL_USER,
+      subject,
 
-        to:
-          process.env.RECEIVER_EMAIL,
+      messageId:
+        mailResult.messageId,
 
-        subject,
+      smtpResponse:
+        mailResult.response
+    });
 
-        duration:
-          `${duration} ms`,
+    console.log(
+      "EMAIL SENT SUCCESSFULLY"
+    );
 
-        messageId:
-          mailResult.messageId,
+  })
+  .catch((emailError) => {
 
-        smtpResponse:
-          mailResult.response
-      });
+    console.error(
+      "EMAIL SEND ERROR:",
+      emailError.message
+    );
 
-      console.log(
-        "EMAIL SENT SUCCESSFULLY"
-      );
+    writeEmailLog({
+      template:
+        "Quotation Enquiry",
 
-      return res.status(200).json({
-        success: true,
+      status:
+        "FAILED",
 
-        message:
-          "Quotation submitted successfully.",
+      name:
+        cleanData.name,
 
-        emailSent: true,
+      mobile:
+        cleanData.mobile,
 
-        enquiryId
-      });
+      location:
+        cleanData.location,
 
-    } catch (emailError) {
+      propertyType:
+        cleanData.propertyType,
 
-      const duration =
-        Date.now() - startTime;
+      area:
+        cleanData.area,
 
-      /* =============================================
-         EMAIL FAILED LOG
-      ============================================= */
+      service:
+        cleanData.service,
 
-      writeEmailLog({
-        template:
-          "Quotation Enquiry",
+      requirements:
+        cleanData.requirements,
 
-        status:
-          "FAILED",
+      enquiryId,
 
-        name:
-          cleanData.name,
+      from:
+        process.env.EMAIL_USER,
 
-        mobile:
-          cleanData.mobile,
+      to:
+        process.env.RECEIVER_EMAIL,
 
-        location:
-          cleanData.location,
+      subject,
 
-        propertyType:
-          cleanData.propertyType,
+      errorCode:
+        emailError.code || "",
 
-        area:
-          cleanData.area,
+      errorMessage:
+        emailError.message || ""
+    });
 
-        service:
-          cleanData.service,
+  });
 
-        requirements:
-          cleanData.requirements,
+  return res.status(200).json({
+    success: true,
 
-        enquiryId,
+    message:
+      "Quotation submitted successfully.",
 
-        from:
-          process.env.EMAIL_USER,
+    emailSent: true,
 
-        to:
-          process.env.RECEIVER_EMAIL,
+    enquiryId
+  });
 
-        subject,
+} catch (error) {
 
-        duration:
-          `${duration} ms`,
+  console.error(
+    "EMAIL TRIGGER ERROR:",
+    error.message
+  );
 
-        errorCode:
-          emailError.code || "",
+  return res.status(200).json({
+    success: true,
 
-        errorMessage:
-          emailError.message || ""
-      });
+    message:
+      "Quotation submitted successfully.",
 
-      console.error(
-        "EMAIL FAILED:",
-        emailError.message
-      );
+    emailSent: false,
 
-      return res.status(200).json({
-        success: true,
-
-        message:
-          "Quotation submitted successfully. We will contact you shortly.",
-
-        emailSent: false,
-
-        enquiryId
-      });
-    }
-
+    enquiryId
+  });
+}
   } catch (error) {
 
     console.error(
