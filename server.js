@@ -198,7 +198,6 @@ app.get("/", (req, res) => {
 });
 
 
-
 app.get("/api/cron", async (req, res) => {
   try {
     await connectDB();
