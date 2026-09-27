@@ -9,6 +9,9 @@ const connectDB = require("./config/db");
 dotenv.config();
 
 const app = express();
+app.use(cors());
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /* =====================================================
    CONFIGURATION
@@ -198,30 +201,7 @@ app.get("/", (req, res) => {
 });
 
 
-// app.get("/api/cron", async (req, res) => {
-//   try {
-//     await connectDB();
-
-//     console.log("✅ Cron job executed successfully");
-
-//     return res.status(200).json({
-//       success: true,
-//       message: "Cron job executed successfully",
-//       mongodb: "connected",
-//       timestamp: new Date().toISOString()
-//     });
-//   } catch (error) {
-//     console.error("❌ Cron job failed:", error.message);
-
-//     return res.status(500).json({
-//       success: false,
-//       message: "Cron job failed",
-//       mongodb: "not connected",
-//       error: error.message
-//     });
-//   }
-// });
-
+// corn api
 
 app.get("/api/cron", async (req, res) => {
   try {
@@ -233,6 +213,7 @@ app.get("/api/cron", async (req, res) => {
       mongodb: "connected",
       timestamp: new Date().toISOString()
     });
+
   } catch (error) {
     console.error("Cron job failed:", error.message);
 
@@ -244,6 +225,7 @@ app.get("/api/cron", async (req, res) => {
     });
   }
 });
+
 /* =====================================================
    HEALTH CHECK
 ===================================================== */
