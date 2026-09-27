@@ -39,6 +39,51 @@
 
 
 
+// const mongoose = require("mongoose");
+
+// let connectionPromise = null;
+
+// const connectDB = async () => {
+//   // Already connected
+//   if (mongoose.connection.readyState === 1) {
+//     return mongoose.connection;
+//   }
+
+//   // Connection already in progress
+//   if (connectionPromise) {
+//     return connectionPromise;
+//   }
+
+//   // Check environment variable
+//   if (!process.env.MONGODB_URI) {
+//     throw new Error("MONGODB_URI is not defined");
+//   }
+
+//   connectionPromise = mongoose
+//     .connect(process.env.MONGODB_URI, {
+//       serverSelectionTimeoutMS: 30000,
+//     })
+//     .then(() => {
+//       console.log("✅ MongoDB connected successfully");
+//       return mongoose.connection;
+//     })
+//     .catch((error) => {
+//       connectionPromise = null;
+
+//       console.error(
+//         "❌ MongoDB connection failed:",
+//         error.message
+//       );
+
+//       throw error;
+//     });
+
+//   return connectionPromise;
+// };
+
+// module.exports = connectDB;
+
+
 const mongoose = require("mongoose");
 
 let connectionPromise = null;
@@ -54,26 +99,24 @@ const connectDB = async () => {
     return connectionPromise;
   }
 
-  // Check environment variable
   if (!process.env.MONGODB_URI) {
     throw new Error("MONGODB_URI is not defined");
   }
 
   connectionPromise = mongoose
-    .connect(process.env.MONGODB_URI, {
-      serverSelectionTimeoutMS: 30000,
-    })
-    .then(() => {
-      console.log("✅ MongoDB connected successfully");
-      return mongoose.connection;
+    .connect(process.env.MONGODB_URI)
+    .then((connection) => {
+      console.log("MongoDB connected successfully");
+
+      return connection;
     })
     .catch((error) => {
-      connectionPromise = null;
-
       console.error(
-        "❌ MongoDB connection failed:",
+        "MongoDB connection failed:",
         error.message
       );
+
+      connectionPromise = null;
 
       throw error;
     });

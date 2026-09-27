@@ -314,13 +314,329 @@
 
 
 
+// const express = require("express");
+// const mongoose = require("mongoose");
+// const cors = require("cors");
+// const dotenv = require("dotenv");
+// const fs = require("fs");
+// const path = require("path");
+
+// const connectDB = require("./config/db");
+
+// dotenv.config();
+
+// const app = express();
+
+// const PORT = process.env.PORT || 5000;
+
+// /* =====================================================
+//    LOG DIRECTORY
+// ===================================================== */
+
+// const logsDirectory = path.join(__dirname, "logs");
+// const emailLogFile = path.join(logsDirectory, "email.log");
+
+// try {
+//   if (!fs.existsSync(logsDirectory)) {
+//     fs.mkdirSync(logsDirectory, {
+//       recursive: true
+//     });
+//   }
+
+//   if (!fs.existsSync(emailLogFile)) {
+//     fs.writeFileSync(
+//       emailLogFile,
+//       "========================================\n" +
+//         "SOHAM PAINTING SERVICES\n" +
+//         "EMAIL LOG\n" +
+//         "========================================\n\n",
+//       "utf8"
+//     );
+//   }
+// } catch (error) {
+//   console.error(
+//     "Log initialization error:",
+//     error.message
+//   );
+// }
+
+// /* =====================================================
+//    CORS
+// ===================================================== */
+
+// const allowedOrigins = [
+//   "http://localhost:5000",
+//   "http://localhost:3000",
+//   "https://sohampanting5.netlify.app",
+//   "https://soham-panting-frontend-uat.vercel.app"
+// ];
+
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       if (!origin) {
+//         return callback(null, true);
+//       }
+
+//       if (allowedOrigins.includes(origin)) {
+//         return callback(null, true);
+//       }
+
+//       console.log("Blocked CORS origin:", origin);
+
+//       return callback(
+//         new Error("Not allowed by CORS")
+//       );
+//     },
+
+//     methods: [
+//       "GET",
+//       "POST",
+//       "PUT",
+//       "DELETE",
+//       "OPTIONS"
+//     ],
+
+//     allowedHeaders: [
+//       "Content-Type",
+//       "Authorization"
+//     ]
+//   })
+// );
+
+// /* =====================================================
+//    BODY PARSER
+// ===================================================== */
+
+// app.use(express.json());
+
+// app.use(
+//   express.urlencoded({
+//     extended: true
+//   })
+// );
+
+// /* =====================================================
+//    ENVIRONMENT CHECK
+// ===================================================== */
+
+// console.log("------------------------------------------");
+// console.log("SOHAM PAINTING SERVICES API");
+// console.log("------------------------------------------");
+
+// console.log(
+//   "MONGODB_URI:",
+//   process.env.MONGODB_URI
+//     ? "Loaded"
+//     : "Missing"
+// );
+
+// console.log(
+//   "EMAIL_USER:",
+//   process.env.EMAIL_USER || "Missing"
+// );
+
+// console.log(
+//   "EMAIL_PASS:",
+//   process.env.EMAIL_PASS
+//     ? "Loaded"
+//     : "Missing"
+// );
+
+// console.log(
+//   "RECEIVER_EMAIL:",
+//   process.env.RECEIVER_EMAIL || "Missing"
+// );
+
+// console.log("------------------------------------------");
+
+// /* =====================================================
+//    CONTACT ROUTES
+// ===================================================== */
+
+// const contactRoutes = require("./routes/contact");
+
+// app.use("/api", contactRoutes);
+
+// /* =====================================================
+//    ROOT ROUTE
+// ===================================================== */
+
+// app.get("/", (req, res) => {
+//   res.status(200).json({
+//     success: true,
+//     message: "Soham Painting API is running"
+//   });
+// });
+
+// /* =====================================================
+//    CRON API
+// ===================================================== */
+
+// app.get("/api/cron", async (req, res) => {
+//   try {
+//     await connectDB();
+
+//     console.log(
+//       "Cron executed successfully"
+//     );
+
+//     return res.status(200).json({
+//       success: true,
+//       message: "Cron job executed successfully",
+//       mongodb:
+//         mongoose.connection.readyState === 1
+//           ? "connected"
+//           : "not connected",
+//       timestamp: new Date().toISOString()
+//     });
+
+//   } catch (error) {
+//     console.error(
+//       "Cron job failed:",
+//       error.message
+//     );
+
+//     return res.status(500).json({
+//       success: false,
+//       message: "Cron job failed",
+//       mongodb: "not connected",
+//       error: error.message
+//     });
+//   }
+// });
+
+// /* =====================================================
+//    HEALTH CHECK
+// ===================================================== */
+
+// app.get("/api/health", async (req, res) => {
+//   try {
+//     await connectDB();
+
+//     return res.status(200).json({
+//       success: true,
+//       message:
+//         "Soham Painting API is healthy",
+//       mongodb:
+//         mongoose.connection.readyState === 1
+//           ? "connected"
+//           : "not connected"
+//     });
+
+//   } catch (error) {
+//     console.error(
+//       "Health check MongoDB error:",
+//       error.message
+//     );
+
+//     return res.status(500).json({
+//       success: false,
+//       message:
+//         "Soham Painting API is running but MongoDB is not connected",
+//       mongodb: "not connected"
+//     });
+//   }
+// });
+
+// /* =====================================================
+//    TEST API
+// ===================================================== */
+
+// app.get("/api/test", (req, res) => {
+//   return res.status(200).json({
+//     success: true,
+//     message:
+//       "Latest Vercel deployment is running",
+//     timestamp: new Date().toISOString()
+//   });
+// });
+
+// /* =====================================================
+//    404 ROUTE
+// ===================================================== */
+
+// app.use((req, res) => {
+//   return res.status(404).json({
+//     success: false,
+//     message: "Route not found",
+//     path: req.originalUrl
+//   });
+// });
+
+// /* =====================================================
+//    GLOBAL ERROR HANDLER
+// ===================================================== */
+
+// app.use(
+//   (error, req, res, next) => {
+//     console.error(
+//       "------------------------------------------"
+//     );
+
+//     console.error("GLOBAL ERROR");
+
+//     console.error(
+//       "------------------------------------------"
+//     );
+
+//     console.error(error.message);
+
+//     console.error(
+//       "------------------------------------------"
+//     );
+
+//     return res.status(500).json({
+//       success: false,
+//       message: "Internal server error"
+//     });
+//   }
+// );
+
+// /* =====================================================
+//    LOCAL SERVER
+// ===================================================== */
+
+// if (require.main === module) {
+//   app.listen(
+//     PORT,
+//     "0.0.0.0",
+//     () => {
+//       console.log(
+//         "------------------------------------------"
+//       );
+
+//       console.log(
+//         `Server running on port ${PORT}`
+//       );
+
+//       console.log(
+//         "------------------------------------------"
+//       );
+
+//       console.log(
+//         "Email log file:"
+//       );
+
+//       console.log(emailLogFile);
+
+//       console.log(
+//         "------------------------------------------"
+//       );
+//     }
+//   );
+// }
+
+// /* =====================================================
+//    EXPORT APP FOR VERCEL
+// ===================================================== */
+
+// module.exports = app;
+
+
 const express = require("express");
-const mongoose = require("mongoose");
 const cors = require("cors");
 const dotenv = require("dotenv");
-const fs = require("fs");
-const path = require("path");
-
 const connectDB = require("./config/db");
 
 dotenv.config();
@@ -328,37 +644,6 @@ dotenv.config();
 const app = express();
 
 const PORT = process.env.PORT || 5000;
-
-/* =====================================================
-   LOG DIRECTORY
-===================================================== */
-
-const logsDirectory = path.join(__dirname, "logs");
-const emailLogFile = path.join(logsDirectory, "email.log");
-
-try {
-  if (!fs.existsSync(logsDirectory)) {
-    fs.mkdirSync(logsDirectory, {
-      recursive: true
-    });
-  }
-
-  if (!fs.existsSync(emailLogFile)) {
-    fs.writeFileSync(
-      emailLogFile,
-      "========================================\n" +
-        "SOHAM PAINTING SERVICES\n" +
-        "EMAIL LOG\n" +
-        "========================================\n\n",
-      "utf8"
-    );
-  }
-} catch (error) {
-  console.error(
-    "Log initialization error:",
-    error.message
-  );
-}
 
 /* =====================================================
    CORS
@@ -374,6 +659,7 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
+      // Postman / server-to-server
       if (!origin) {
         return callback(null, true);
       }
@@ -417,53 +703,11 @@ app.use(
 );
 
 /* =====================================================
-   ENVIRONMENT CHECK
-===================================================== */
-
-console.log("------------------------------------------");
-console.log("SOHAM PAINTING SERVICES API");
-console.log("------------------------------------------");
-
-console.log(
-  "MONGODB_URI:",
-  process.env.MONGODB_URI
-    ? "Loaded"
-    : "Missing"
-);
-
-console.log(
-  "EMAIL_USER:",
-  process.env.EMAIL_USER || "Missing"
-);
-
-console.log(
-  "EMAIL_PASS:",
-  process.env.EMAIL_PASS
-    ? "Loaded"
-    : "Missing"
-);
-
-console.log(
-  "RECEIVER_EMAIL:",
-  process.env.RECEIVER_EMAIL || "Missing"
-);
-
-console.log("------------------------------------------");
-
-/* =====================================================
-   CONTACT ROUTES
-===================================================== */
-
-const contactRoutes = require("./routes/contact");
-
-app.use("/api", contactRoutes);
-
-/* =====================================================
-   ROOT ROUTE
+   ROOT
 ===================================================== */
 
 app.get("/", (req, res) => {
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Soham Painting API is running"
   });
@@ -474,20 +718,22 @@ app.get("/", (req, res) => {
 ===================================================== */
 
 app.get("/api/cron", async (req, res) => {
+  console.log("==========================================");
+  console.log("CRON API CALLED");
+  console.log("Time:", new Date().toISOString());
+  console.log("==========================================");
+
   try {
     await connectDB();
 
     console.log(
-      "Cron executed successfully"
+      "Cron job executed successfully"
     );
 
     return res.status(200).json({
       success: true,
       message: "Cron job executed successfully",
-      mongodb:
-        mongoose.connection.readyState === 1
-          ? "connected"
-          : "not connected",
+      mongodb: "connected",
       timestamp: new Date().toISOString()
     });
 
@@ -516,17 +762,14 @@ app.get("/api/health", async (req, res) => {
 
     return res.status(200).json({
       success: true,
-      message:
-        "Soham Painting API is healthy",
-      mongodb:
-        mongoose.connection.readyState === 1
-          ? "connected"
-          : "not connected"
+      message: "Soham Painting API is healthy",
+      mongodb: "connected",
+      timestamp: new Date().toISOString()
     });
 
   } catch (error) {
     console.error(
-      "Health check MongoDB error:",
+      "Health check error:",
       error.message
     );
 
@@ -534,61 +777,54 @@ app.get("/api/health", async (req, res) => {
       success: false,
       message:
         "Soham Painting API is running but MongoDB is not connected",
-      mongodb: "not connected"
+      mongodb: "not connected",
+      error: error.message
     });
   }
 });
 
 /* =====================================================
-   TEST API
+   CONTACT ROUTES
 ===================================================== */
 
-app.get("/api/test", (req, res) => {
-  return res.status(200).json({
-    success: true,
-    message:
-      "Latest Vercel deployment is running",
-    timestamp: new Date().toISOString()
-  });
-});
+const contactRoutes = require("./routes/contact");
+
+app.use("/api", contactRoutes);
 
 /* =====================================================
-   404 ROUTE
+   404
 ===================================================== */
 
 app.use((req, res) => {
+  console.log(
+    "404 Route:",
+    req.method,
+    req.originalUrl
+  );
+
   return res.status(404).json({
     success: false,
     message: "Route not found",
-    path: req.originalUrl
+    path: req.originalUrl,
+    method: req.method
   });
 });
 
 /* =====================================================
-   GLOBAL ERROR HANDLER
+   ERROR HANDLER
 ===================================================== */
 
 app.use(
   (error, req, res, next) => {
     console.error(
-      "------------------------------------------"
-    );
-
-    console.error("GLOBAL ERROR");
-
-    console.error(
-      "------------------------------------------"
-    );
-
-    console.error(error.message);
-
-    console.error(
-      "------------------------------------------"
+      "GLOBAL ERROR:",
+      error.message
     );
 
     return res.status(500).json({
       success: false,
-      message: "Internal server error"
+      message: "Internal server error",
+      error: error.message
     });
   }
 );
@@ -603,7 +839,7 @@ if (require.main === module) {
     "0.0.0.0",
     () => {
       console.log(
-        "------------------------------------------"
+        "=========================================="
       );
 
       console.log(
@@ -611,24 +847,14 @@ if (require.main === module) {
       );
 
       console.log(
-        "------------------------------------------"
-      );
-
-      console.log(
-        "Email log file:"
-      );
-
-      console.log(emailLogFile);
-
-      console.log(
-        "------------------------------------------"
+        "=========================================="
       );
     }
   );
 }
 
 /* =====================================================
-   EXPORT APP FOR VERCEL
+   EXPORT
 ===================================================== */
 
 module.exports = app;
