@@ -4,6 +4,7 @@ const cors = require("cors");
 const dotenv = require("dotenv");
 const fs = require("fs");
 const path = require("path");
+const connectDB = require("./config/db");
 
 dotenv.config();
 
@@ -194,6 +195,32 @@ app.get("/", (req, res) => {
     success: true,
     message: "Soham Painting API is running"
   });
+});
+
+
+
+app.get("/api/cron", async (req, res) => {
+  try {
+    await connectDB();
+
+    console.log("✅ Cron job executed successfully");
+
+    return res.status(200).json({
+      success: true,
+      message: "Cron job executed successfully",
+      mongodb: "connected",
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    console.error("❌ Cron job failed:", error.message);
+
+    return res.status(500).json({
+      success: false,
+      message: "Cron job failed",
+      mongodb: "not connected",
+      error: error.message
+    });
+  }
 });
 
 /* =====================================================
