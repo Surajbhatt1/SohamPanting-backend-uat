@@ -649,46 +649,66 @@ const PORT = process.env.PORT || 5000;
    CORS
 ===================================================== */
 
+// const allowedOrigins = [
+//   "http://localhost:5000",
+//   "http://localhost:3000",
+//   "https://sohampanting5.netlify.app",
+//   "https://soham-panting-frontend-uat.vercel.app",
+//   "https://www.sohampaintingservice.in",
+//   "https://sohampaintingservice.in"
+// ];
+
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       // Postman / server-to-server
+//       if (!origin) {
+//         return callback(null, true);
+//       }
+
+//       if (allowedOrigins.includes(origin)) {
+//         return callback(null, true);
+//       }
+
+//       console.log("Blocked CORS origin:", origin);
+
+//       return callback(
+//         new Error("Not allowed by CORS")
+//       );
+//     },
+
+//     methods: [
+//       "GET",
+//       "POST",
+//       "PUT",
+//       "DELETE",
+//       "OPTIONS"
+//     ],
+
+//     allowedHeaders: [
+//       "Content-Type",
+//       "Authorization"
+//     ]
+//   })
+// );
+
+
+
+
 const allowedOrigins = [
   "http://localhost:5000",
   "http://localhost:3000",
   "https://sohampanting5.netlify.app",
   "https://soham-panting-frontend-uat.vercel.app",
   "https://www.sohampaintingservice.in",
-  "https://sohampaintingservice.in"
+  "https://sohampaintingservice.in",
 ];
 
 app.use(
   cors({
-    origin: function (origin, callback) {
-      // Postman / server-to-server
-      if (!origin) {
-        return callback(null, true);
-      }
-
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-
-      console.log("Blocked CORS origin:", origin);
-
-      return callback(
-        new Error("Not allowed by CORS")
-      );
-    },
-
-    methods: [
-      "GET",
-      "POST",
-      "PUT",
-      "DELETE",
-      "OPTIONS"
-    ],
-
-    allowedHeaders: [
-      "Content-Type",
-      "Authorization"
-    ]
+    origin: allowedOrigins,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
   })
 );
 
