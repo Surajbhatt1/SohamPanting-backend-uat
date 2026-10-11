@@ -654,7 +654,7 @@ const allowedOrigins = [
   "http://localhost:3000",
   "https://sohampanting5.netlify.app",
   "https://soham-panting-frontend-uat.vercel.app",
-  "https://www.sohampaintingservice.in/",
+  "https://www.sohampaintingservice.in",
   "https://sohampaintingservice.in"
 ];
 
