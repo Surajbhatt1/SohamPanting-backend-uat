@@ -693,7 +693,26 @@ const PORT = process.env.PORT || 5000;
 // );
 
 
+// Updated code///
 
+// const allowedOrigins = [
+//   "http://localhost:5000",
+//   "http://localhost:3000",
+//   "https://sohampanting5.netlify.app",
+//   "https://soham-panting-frontend-uat.vercel.app",
+//   "https://www.sohampaintingservice.in",
+//   "https://sohampaintingservice.in"
+// ];
+
+// app.use(
+//   cors({
+//     origin: allowedOrigins,
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//   })
+// );
+
+// Updated
 
 const allowedOrigins = [
   "http://localhost:5000",
@@ -701,16 +720,31 @@ const allowedOrigins = [
   "https://sohampanting5.netlify.app",
   "https://soham-panting-frontend-uat.vercel.app",
   "https://www.sohampaintingservice.in",
-  "https://sohampaintingservice.in",
+  "https://sohampaintingservice.in"
 ];
-
 app.use(
   cors({
-    origin: allowedOrigins,
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like Postman, mobile apps, or curl)
+      if (!origin) {
+        return callback(null, true);
+      }
+      if (allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+      // DO NOT pass new Error() here — pass false so it doesn't trigger a 500 crash
+      console.warn("Blocked CORS origin:", origin);
+      return callback(null, false);
+    },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true
   })
 );
+// Explicitly handle preflight OPTIONS requests across all routes
+app.options("*", cors());
+
+
 
 /* =====================================================
    BODY PARSER
