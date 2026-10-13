@@ -714,9 +714,39 @@ const PORT = process.env.PORT || 5000;
 
 // Updated
 
+// const allowedOrigins = [
+//   "http://localhost:5000",
+//   "http://localhost:3000",
+//   "https://sohampanting5.netlify.app",
+//   "https://soham-panting-frontend-uat.vercel.app",
+//   "https://www.sohampaintingservice.in",
+//   "https://sohampaintingservice.in"
+// ];
+
+// app.use(
+//   cors({
+//     origin: function (origin, callback) {
+//       if (!origin || allowedOrigins.includes(origin)) {
+//         return callback(null, true);
+//       }
+//       // Never pass new Error(...) here
+//       return callback(null, false);
+//     },
+//     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//     credentials: true
+//   })
+// );
+
+// app.options("*", cors());
+
+
+
+
 const allowedOrigins = [
   "http://localhost:5000",
   "http://localhost:3000",
+  "http://localhost:5173",
   "https://sohampanting5.netlify.app",
   "https://soham-panting-frontend-uat.vercel.app",
   "https://www.sohampaintingservice.in",
@@ -726,10 +756,11 @@ const allowedOrigins = [
 app.use(
   cors({
     origin: function (origin, callback) {
+      // Allow requests with no origin (e.g. mobile apps, curl, server-to-server)
       if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      // Never pass new Error(...) here
+      // Pass false instead of new Error(...) to avoid triggering 500 Internal Server Error
       return callback(null, false);
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -739,8 +770,6 @@ app.use(
 );
 
 app.options("*", cors());
-
-
 
 /* =====================================================
    BODY PARSER
