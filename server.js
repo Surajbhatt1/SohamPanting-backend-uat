@@ -722,18 +722,14 @@ const allowedOrigins = [
   "https://www.sohampaintingservice.in",
   "https://sohampaintingservice.in"
 ];
+
 app.use(
   cors({
     origin: function (origin, callback) {
-      // Allow requests with no origin (like Postman, mobile apps, or curl)
-      if (!origin) {
+      if (!origin || allowedOrigins.includes(origin)) {
         return callback(null, true);
       }
-      if (allowedOrigins.includes(origin)) {
-        return callback(null, true);
-      }
-      // DO NOT pass new Error() here — pass false so it doesn't trigger a 500 crash
-      console.warn("Blocked CORS origin:", origin);
+      // Never pass new Error(...) here
       return callback(null, false);
     },
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
@@ -741,7 +737,7 @@ app.use(
     credentials: true
   })
 );
-// Explicitly handle preflight OPTIONS requests across all routes
+
 app.options("*", cors());
 
 
@@ -770,7 +766,7 @@ app.get("/", (req, res) => {
 });
 
 
-
+// debug
 app.get("/api/debug", (req, res) => {
   res.json({
     version: "2026-10-12-a",
@@ -778,6 +774,7 @@ app.get("/api/debug", (req, res) => {
     nodeEnv: process.env.NODE_ENV
   });
 });
+
 /* =====================================================
    CRON API
 ===================================================== */
