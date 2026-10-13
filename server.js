@@ -775,6 +775,18 @@ app.get("/api/debug", (req, res) => {
   });
 });
 
+
+
+// app.get("/api/debug", (req, res) => {
+//   return res.status(200).json({
+//     success: true,
+//     version: "2026-10-13-b",
+//     hasMongoUri: Boolean(process.env.MONGODB_URI),
+//     nodeEnv: process.env.NODE_ENV || "not set",
+//   });
+// });
+
+
 /* =====================================================
    CRON API
 ===================================================== */
